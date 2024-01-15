@@ -10,16 +10,29 @@
     <link rel="stylesheet" href="../default.css">
     <title>Connecting...</title>
     <script>
+        var last_mark = "---";
         function onConnected(){
             subscribe("0/THOUZER_HW/" + type_and_serial + "/event/app");
+            subscribe("0/WHISPERER/" + type_and_serial + "/app_status");
+            dest_t_update("---", "---");
         }
         function subscribeParse(message){
+            const from_json = JSON.parse(message.payloadString);
             if(message.destinationName == "0/THOUZER_HW/" + type_and_serial + "/event/app"){
-                const from_json = JSON.parse(message.payloadString);
-                if(from_json.data != null && from_json.data.application == "highway" && from_json.data.status == "exit_error" && from_json.data.event == "badMark" && from_json.data.data.mark.code != null){
-                    document.getElementById("window").style.backgroundColor = "#FF4040";
-                    document.getElementById("pop-up").checked = true;
-                    document.getElementById("window").innerHTML = "<br><span style=\"font-size:150%;font-weight:bold;\">code: " + from_json.data.data.mark.code + "</span><br><span style=\"font-size:200%;font-weight:bold;\">" + from_json.data.data.mark.name + "</span><br><span style=\"font-size:120%;font-weight:bold;\">score: " + from_json.data.data.mark.score + "</span><br><br><hr><br>" + message.payloadString;
+                if(from_json.data != null && from_json.data.application != null && from_json.data.application == "highway" && from_json.data.data != null){
+                    if(from_json.data.event != null && from_json.data.event != "badMark" && from_json.data.data.mark != null && from_json.data.data.mark.name != null) last_mark = from_json.data.data.mark.name;
+                    if(from_json.data.data.destination != null) dest_t_update(from_json.data.data.destination, last_mark);
+                }
+            }
+            if(message.destinationName == "0/WHISPERER/" + type_and_serial + "/app_status"){
+                if(from_json.app.indexOf("./bin/app-linetrace") != 0){
+                    document.getElementById("dest_t").style.display = 'none';
+                    document.getElementById("dest").style.display = 'block';
+                    document.getElementById("select").style.display = 'block';
+                }else{
+                    document.getElementById("dest").style.display = 'none';
+                    document.getElementById("select").style.display = 'none';
+                    document.getElementById("dest_t").style.display = 'block';
                 }
             }
         }
@@ -44,15 +57,21 @@
             }
         }
         function go(){
-            if(document.getElementById("dest").value != "") publishHW(document.getElementById("dest").value);
+            if(document.getElementById("dest").value != ""){
+                publishHW(document.getElementById("dest").value);
+                dest_t_update("---", "---");
+            }
+        }
+        function dest_t_update(d, l){
+            document.getElementById("dest_t").innerHTML = "<div style='height:100%;width:100%;float:left;position:relative;'><span class='text'>dest : " + d + " / last : " + l + "</span></div>";
         }
     </script>
 </head>
 <body style="height:100%;margin:0;" onload="tryConnectFirst();">
-<div id="status" class="area" style="height:8%;font-size:7vmin;">Connecting...</div>
+<div id="status" class="area" style="height:8%;font-size:6vmin;">Connecting...</div>
 
-<input id="dest" type="text" style="height:17%;font-size:12vmin;width:calc(100% - 75px);box-sizing:border-box;text-align:center;" value="">
-<select style="height:17%;font-size:12vmin;width:40px;box-sizing:border-box;" id="select" onChange="select();">
+<input id="dest" type="text" style="height:17%;font-size:12vmin;width:calc(100% - 75px);box-sizing:border-box;float:left;text-align:center;" value="">
+<select style="height:17%;font-size:12vmin;width:40px;box-sizing:border-box;float:left;" id="select" onChange="select();">
   <option value=""></option>
   <option value="100">100</option><option value="101">101</option><option value="102">102</option><option value="103">103</option>
   <option value="104">104</option><option value="105">105</option><option value="106">106</option><option value="107">107</option>
@@ -75,6 +94,7 @@
   <option value="700">700</option><option value="701">701</option><option value="702">702</option><option value="703">703</option>
   <option value="704">704</option><option value="705">705</option><option value="706">706</option><option value="707">707</option>
 </select>
+<div class="area" style="height:12%;font-size:6vmin;display:none;" id="dest_t"></div>
 
 <div class="area" style="width:33%;height:15%;font-size:12vmin;"><div class="button" onclick="add('7')"><span class="text">7</span></div></div>
 <div class="area" style="width:34%;height:15%;font-size:12vmin;"><div class="button" onclick="add('8')"><span class="text">8</span></div></div>

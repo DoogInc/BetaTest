@@ -10,7 +10,7 @@
     <title></title>
     <script>
         var defa = false;
-        var default_title = "Application example";
+        var default_title = "Application Folder";
         function load(){
             document.title = default_title;
             loadCookieArea();
@@ -22,6 +22,7 @@
         }
         function firstSelect(){
             document.getElementById("select").options[0].selected = true;
+            select();
         }
         function loadCookieArea(){
             loadCookie();
@@ -81,7 +82,9 @@
             for(var index = 0; index < links.length; index++){
                 var link = links[index];
                 var oldHref = link.getAttribute("href");
-                link.setAttribute("href", (oldHref.indexOf("?") >= 0)?oldHref.replace(/\?.*/, number):(oldHref + number));
+                var add = number;
+                if(link.getAttribute("arg") != undefined) add += (number == ""?"?":"&") + link.getAttribute("arg");
+                link.setAttribute("href", (oldHref.indexOf("?") >= 0)?oldHref.replace(/\?.*/, add):(oldHref + add));
             }
         }
         function changeType(){
@@ -100,7 +103,7 @@
     </script>
 </head>
 <body onload="load();">
-<h1><b>Application example</b></h1>
+<h1><b>Application Folder</b></h1>
 <hr>
 <a href="readme-check.html">If you can NOT use samples, please check this.</a><br>
 <a href="readme-customized.html">If you use customized application, please read this.</a><br>
@@ -117,15 +120,16 @@
 <hr>
 <h3><b><a class="app" href="../user/">Here is customized application.</a></b></h3>
 <hr>
-<h2><b><a class="app" href="app-userInput-stick.html">UserInput-Stick</a></b></h2>
+<h2><b><a class="app" href="app-userInput-stick.html">Stick-Control</a></b></h2>
 <h2><b><a class="app" href="app-karugamo.html">Follow-Me</a></b></h2>
 <h2><b><a class="app" href="app-memorytrace-simple.html">MemoryTrace-Simple-Button</a></b></h2>
 <h2><b><a class="app" href="app-memorytrace-multi.html">MemoryTrace-Multi-Button</a></b></h2>
 <h2><b><a class="app" href="app-linetrace-simple.html">Highway-Simple-Button</a></b></h2>
 <h2><b><a class="app" href="app-linetrace-multi.html">Highway-Multi-Button</a></b></h2>
 <hr>
-<h2><b><a class="app" href="check-memorytrace.html">Check-MemoryTrace</a></b></h2>
-<h2><b><a class="app" href="check-linetrace.html">Check-LineTrace</a></b></h2>
+<h2><b><a class="app" href="app-userInput-stick.html" arg="advanced">Advanced-Stick-Control</a></b></h2>
+<h2><b><a class="app" href="advanced-memorytrace.html">Advanced-MemoryTrace</a></b></h2>
+<h2><b><a class="app" href="advanced-linetrace.html">Advanced-LineTrace</a></b></h2>
 <h2><b><a class="app" href="check-battery.html">Battery-gauge</a></b></h2>
 <h2><b><a class="app" href="check-status345.html">Indicator-3-Light</a></b></h2>
 <h2><b><a class="app" href="check-ext01.html">Extension-2-IO</a></b></h2>

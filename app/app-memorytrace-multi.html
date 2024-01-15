@@ -18,7 +18,7 @@
                 const from_json = JSON.parse(message.payloadString);
                 if(from_json.MT_suspend != null && from_json.app != null && from_json.MT_teach != null){
                     if(from_json.app.indexOf("./bin/app-memorytrace") == 0){
-                        document.getElementById("memorize_t").innerText = "Stop w/o suspend";
+                        document.getElementById("memorize_t").innerText = "Stop w/o hold";
                         document.getElementById("play_t").innerText = "Stop";
                         document.getElementById("loop_t").innerText = "Stop";
                     }else{
@@ -76,7 +76,7 @@
     </script>
 </head>
 <body style="height:100%;margin:0;" onload="tryConnectFirst();play();">
-<div id="status" class="area" style="height:8%;font-size:7vmin;">Connecting...</div>
+<div id="status" class="area" style="height:8%;font-size:6vmin;">Connecting...</div>
 
 <div class="area" style="height:9%;font-size:6vmin;width:100%;"><div class="button" id="memorize" onclick="memorize()"><span class="text" id="memorize_t">Select Memorize</span></div></div>
 <div class="area" style="height:9%;font-size:6vmin;width:100%;"><div class="button" id="play" onclick="play()"><span class="text" id="play_t">Select Play</span></div></div>

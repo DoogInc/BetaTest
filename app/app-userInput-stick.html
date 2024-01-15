@@ -10,13 +10,8 @@
     <link rel="stylesheet" href="../default.css">
     <title>Connecting...</title>
     <script>
-        var first = true;
         var time = new Date();
         function onConnected(){
-            if(first){
-                publishCmd(''); //clear alert (SORRY! we changed to '' after that DNE4.7.3.0.0)
-                first = false;
-            }
             subscribe("0/WHISPERER/" + type_and_serial + "/speedmode");
         }
         function subscribeParse(message){
@@ -31,6 +26,33 @@
                     document.getElementById("m4").style.backgroundColor = (from_json.mode == 4)?"#FFF100":"#FFFFFF";
                 }
             }
+        }
+        var reverse = false;
+        function load(){
+            if(document.location.search.length > 1){
+                var array = document.location.search.substring(1).split('&');
+                for(var str of array) if(str == "advanced"){
+                    document.getElementById("button_normal").style.visibility = "visible";
+                    document.getElementById("button_reverse").style.visibility = "visible";
+                    document.getElementById("text_front").style.visibility = "visible";
+                    document.getElementById("text_rear").style.visibility = "visible";
+                    document.getElementById("text_left").style.visibility = "visible";
+                    document.getElementById("text_right").style.visibility = "visible";
+                    document.getElementById("control_init").style.backgroundColor = "#FFFFFF";
+                }
+            }
+        }
+        function revFunc(flag){
+            reverse = flag;
+            document.getElementById("control").style.backgroundColor = reverse?"#FFDDCC":"#FFFFFF";
+            var textF = document.getElementById("textF");
+            var textR = document.getElementById("textR");
+            textF.innerText = reverse?"Rear":"Front";
+            textR.innerText = reverse?"Front":"Rear";
+            textF.style.color = reverse?"#CC0000":"#000000";
+            textR.style.color = reverse?"#CC0000":"#000000";
+            textF.style.fontWeight = reverse?"bold":"normal";
+            textR.style.fontWeight = reverse?"bold":"normal";
         }
     </script>
     <style type="text/css">
@@ -65,11 +87,50 @@
         -ms-user-select: none;
         user-select: none;
     }
+    .add-button{
+        visibility: hidden;
+        position: absolute;
+        top: calc(20%);
+        width: 20vmin;
+        height: 20vmin;
+        cursor: pointer;
+        border: 2px solid #232323;
+        border-radius: 50%;
+        box-sizing: border-box;
+        font-size: 4vmin;
+        -webkit-tap-highlight-color:rgba(0,0,0,0);
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    .add-button:active { background-color: #FFF100; }
+    .add-text{
+        visibility: hidden;
+        white-space: nowrap;
+        position: absolute;
+        font-size: 4vmin;
+        -webkit-tap-highlight-color:rgba(0,0,0,0);
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    .content{
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        -ms-overflow-style: none; //IE and Edge
+        scrollbar-width: none; //Firefox
+    }
+    .content::-webkit-scrollbar{
+        display:none; //Chrome and Safari
+    }
     -->
     </style>
 </head>
-<body style="height:100%;margin:0;" onload="tryConnectFirst();">
-<div id="status" class="area" style="height:8%;font-size:7vmin;">Connecting...</div>
+<body class="content" onload="load();tryConnectFirst();">
+<div id="status" class="area" style="height:8%;font-size:6vmin;">Connecting...</div>
 <div class="area" style="height:12%;font-size:6vmin;">
     <div class="button" style="width:20%;" onclick="publishCmd('#speedmode_0');" id="m0"><span class="text">0</span></div>
     <div class="button" style="width:20%;" onclick="publishCmd('#speedmode_1');" id="m1"><span class="text">1</span></div>
@@ -79,6 +140,12 @@
 </div>
 <canvas id="control" class="stick"></canvas>
 <canvas id="control_init" class="stick-init"></canvas>
+<div class="add-button" id="button_normal" style="left:calc(0%);" onclick="revFunc(false);"><span class="text">Normal</span></div>
+<div class="add-button" id="button_reverse" style="left:calc(100% - 20vmin);" onclick="revFunc(true);"><span class="text">Reverse</span></div>
+<span class="add-text" id="text_front" style="top: calc(60% - 40vmin + 3vmin); left: calc(50%);"><span class="text" id="textF">Front</span></span>
+<span class="add-text" id="text_rear" style="top: calc(60% + 40vmin - 3vmin); left: calc(50%);"><span class="text" id="textR">Rear</span></span>
+<span class="add-text" id="text_left" style="top: calc(60%); left: calc(50% - 40vmin + 3vmin);transform:rotate(-90deg);"><span class="text">Left</span></span>
+<span class="add-text" id="text_right" style="top: calc(60%); left: calc(50% + 40vmin - 3vmin);transform:rotate(+90deg);"><span class="text">Right</span></span>
 
 <script>
 var stick = false, v_per = 0, w_per = 0;
@@ -88,21 +155,22 @@ window.addEventListener("beforeunload", reset);
 var control = document.getElementById("control");
 var control_init = document.getElementById("control_init");
 
-var stopCount = 0;
+var stopCount = 100000;
 setInterval("send()", 50);
 function send(){
     if(time && new Date().getTime() - time.getTime() > 5000) reset();
-    if(stick && v_per*v_per + w_per*w_per > 0.1*0.1){
-        console.log(v_per + " " + w_per);
-        publishVW_per(v_per, w_per);
+    if(stick){
+        if(stopCount > 40) publishCmd(''); //clear alert (SORRY! we changed to '' after that DNE4.7.3.0.0)
         stopCount = 0;
-    }else{
-        if(stopCount < 40){ //2seconds
-            publishVW_per(0, 0);
-            ++stopCount;
+        if(v_per*v_per + w_per*w_per > 0.1*0.1){
+            publishVW_per(reverse?-v_per:v_per, w_per);
         }else{
-            control_init.style.backgroundColor = "#FFFFFF";
+            publishVW_per(0, 0);
         }
+    }else{
+        ++stopCount;
+        if(stopCount <= 40) publishVW_per(0, 0); //2seconds
+        if(stopCount == 40) control_init.style.backgroundColor = "#FFFFFF";
     }
 }
 
@@ -172,11 +240,11 @@ function touch_monitor(e) {
 var gamepad_connectIndex = null;
 var gamepad_loopID = null;
 var gamepad_beep = false;
-addEventListener("gamepadconnected", (e) => {
+addEventListener("gamepadconnected", function(e){
     gamepad_connectIndex = e.gamepad.index;
     gamepad_loopID = requestAnimationFrame(gamepad_loop);
 });
-addEventListener("gamepaddisconnected", (e) => {
+addEventListener("gamepaddisconnected", function(e){
     cancelAnimationFrame(gamepad_loopID);
     gamepad_connectIndex = null;
     reset();
@@ -277,14 +345,14 @@ function mousemove(e) {
 
 
 var key_aup = false, key_adown = false, key_aleft = false, key_aright = false;
-document.addEventListener("keydown", (e) => {
+document.addEventListener("keydown", function(e){
     time = new Date();
     if(e.key == "ArrowUp") key_aup = true;
     if(e.key == "ArrowDown") key_adown = true;
     if(e.key == "ArrowLeft") key_aleft = true;
     if(e.key == "ArrowRight") key_aright = true;
 });
-document.addEventListener("keyup", (e) => {
+document.addEventListener("keyup", function(e){
     if(e.key == "ArrowUp") key_aup = false;
     if(e.key == "ArrowDown") key_adown = false;
     if(e.key == "ArrowLeft") key_aleft = false;
