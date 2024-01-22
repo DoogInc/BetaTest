@@ -3,23 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <script type="text/javascript" src="fixed_info.js"></script>
-    <title></title>
+    <title>sample-app</title>
     <script>
+        var defa = false;
+        var pls_in = "Please input.";
+        var websocket_host = null;
+        var websocket_port = null;
+        var mqtt_username = null;
+        var mqtt_password = null;
+        function loadCookie(){
+            if(document.cookie == "") resetCookie();
+            var result;
+            websocket_host = (result= new RegExp('(?:^|; )' + encodeURIComponent("address") + '=([^;]*)').exec(document.cookie)) ? String(result[1]) : null;
+            websocket_port = (result= new RegExp('(?:^|; )' + encodeURIComponent("port") + '=([^;]*)').exec(document.cookie)) ? String(result[1]) : null;
+            mqtt_username = (result= new RegExp('(?:^|; )' + encodeURIComponent("username") + '=([^;]*)').exec(document.cookie)) ? String(result[1]) : null;
+            mqtt_password = (result= new RegExp('(?:^|; )' + encodeURIComponent("password") + '=([^;]*)').exec(document.cookie)) ? String(result[1]) : null;
+        }
+        function saveCookie(){ //need four input elements
+            document.cookie = "address=" + document.getElementById("address").value + "; max-age=157680000;"
+            document.cookie = "port=" + document.getElementById("port").value + "; max-age=157680000;";
+            document.cookie = "username=" + document.getElementById("username").value + "; max-age=157680000;"
+            document.cookie = "password=" + document.getElementById("password").value + "; max-age=157680000;"
+        }
+        function resetCookie(){
+            document.cookie = "address=" + pls_in + "; max-age=157680000;";
+            document.cookie = "port=" + pls_in + "; max-age=157680000;";
+            document.cookie = "username=" + pls_in + "; max-age=157680000;";
+            document.cookie = "password=" + pls_in + "; max-age=157680000;";
+        }
         function load(){
-            document.title = type_and_serial;
-            document.getElementById("tas").innerHTML = type_and_serial;
-            document.getElementById("version").innerHTML = "<b>Version:</b> " + dne_version;
+            loadCookieArea();
+            document.getElementById("protocol").innerHTML = (location.protocol == 'http:'?"<b style='color:green;'>HTTP</b>":"<b style='color:red;'>"+(location.protocol == 'https:'?"HTTPS":"UNDEFINED")+"</b>");
+        }
+        function loadCookieArea(){
+            loadCookie();
+            if(websocket_host != null && websocket_port != null && mqtt_username != null && mqtt_password != null){
+                document.getElementById("address").value = websocket_host;
+                document.getElementById("port").value = websocket_port;
+                document.getElementById("username").value = mqtt_username;
+                document.getElementById("password").value = mqtt_password;
+            }else{
+                document.getElementById("address").value = "Need Enable Cookie";
+                document.getElementById("port").value = "Need Enable Cookie";
+                document.getElementById("username").value = "Need Enable Cookie";
+                document.getElementById("password").value = "Need Enable Cookie";
+            }
+            changeType();
+        }
+        function changeType(){
+            p = document.getElementById("password");
+            if(p.value == pls_in || p.value == "Need Enable Cookie"){
+                p.type = "text";
+                if(p.value == pls_in) defa = true;
+            }else{
+                p.type = "password";
+                defa = false;
+            }
+        }
+        function clickType(){
+            if(defa) document.getElementById("password").value="";
         }
     </script>
 </head>
 <body onload="load();">
-    <h1 id="tas"></h1>
+    This page it sample codes and web pages for MQTT API connecting to Doog Navigation Engine(DNE). Only for development/test use. <br>
+    If actual operation to be adopted to customer, the web host or broker should be provided by the integrator.<br>
+    This page is linked with github page: <a href="https://github.com/DoogInc/sample-app">https://github.com/DoogInc/sample-app</a><br>
+    Please connect to MQTT broker and set/get serial number. <br>
+
     <hr>
-    <h2><b><a href="app/index.html">Application Folder</a></b></h2>
+
+    <div style="font-size:120%;margin-bottom:5px;"><b>[Cookie] MQTT over WebSocket</b></div>
+    <span style="display:inline-block;width:120px;font-size:120%;">- address </span><input type="text" size="15" id="address" style="font-size:120%;"><br>
+    <span style="display:inline-block;width:120px;font-size:120%;">- port </span><input type="text" size="15" id="port" style="font-size:120%;"><br>
+    <span style="display:inline-block;width:120px;font-size:120%;">- username </span><input type="text" size="15" id="username" style="font-size:120%;"><br>
+    <span style="display:inline-block;width:120px;font-size:120%;">- password </span><input type="text" size="15" id="password" style="font-size:120%;" oninput="changeType();" onclick="clickType();changeType();"><br>
+    <input style="height:30px;width:100px;font-size:120%;margin-top:5px;" type="button" id="save" value="save" onclick="saveCookie();loadCookieArea();"> <input style="height:30px;width:100px;font-size:120%;margin-top:5px;" type="button" id="reset" value="reset" onclick="resetCookie();loadCookieArea();"><br>
+
     <hr>
-    <span id="version"></span><br>
+
+    <div style="font-size:160%;margin-bottom:5px;"><b>Additional Samples</b></div>
+    <a href="DNE4.8.1.0.1-v20240111/additional/autostart-blink.html">Blinking Indicator Light(DNE4.8.1.0.0 or later, autostart JS)</a><br>
+    <a href="DNE4.8.1.0.1-v20240111/additional/autostart-low-battery.html">Blinking Indicator Light when battery low level.(DNE4.8.1.0.0 or later, autostart JS)</a><br>
+    <br>
+    [notice]<br>
+    autostartに対応するアプリはdata/html/autostart.htmlとして配置することでロボットの起動から10秒後に動作します。<br>
     <hr>
+
+    <div style="font-size:160%;margin-bottom:5px;"><b>Pre-Installed Samples/API release note</b></div>
+
+    <b><a href="DNE5.0.0.0.0-v20240115/app">DNE5.0.0.0.0-v20240115</a></b><br>
+    [notice]<br>
+    <span style="color:#FF4444">Beta version, not release/install version for Thozuer E-series</span><br>
+    [What's New for MQTT API and Web bases UI application]<br>
+    -The calculation of Highway Code Marker quality score has been changed,
+    recommended value change to 70 or higher(previous version was 100 or higher).<br>
+    -MemoryTrace's commands, memory-start-cancel has been removed. new command memory-start added for start memorize.
+    If memorize is already in progress, memory-start command canceled on-going and start a new memorization<br>
+    -DNE(Doog Navigation Engine)now supports DNS. The nameserver refers to 192.168.212.50, so set DNE to the router setting.<br>
+
+    -New MQTT topic 0/THOUZER_HW/[robot_serial]/indicator/app added, to provide alarm, alert, and error information.<br>
+    --If #success and #alert are not issued when the application ends, #end will be issued, and #successHold will be issued for Memorized Hold.
+    -- Some items has been added to the /event/app topic to notify the line-trace navigation status.<br>
+    [LIB]<br>
+    sample application UI has been renewd.<br>
+    <br>
+    <b><a href="DNE4.8.1.0.1-v20240111/app">DNE4.8.1.0.1-v20240111</a></b><br>
+    [notice]<br>
+    Solved the minor bug of autostart JS app. Added a procedure to the beep() function in client_dne_lib.js to prevent the sound from playing from the browser terminal.<br>
+    A command has been added that does not sound beep on the DNE side related to #ext345. (The command is used in the Additional autostart Sample above.<br>
+    lient_dne_lib.js can now support encrypted SSL. Please write wss:// before the server address.  You can use terminal or web server which limited to HTTPS. However, DNE's MQTT client is not supported SSL, so please use a broker that supports both TCP and SSL connections.
+    <br>
+    <br>
+    <b><a href="DNE4.8.0.4.4-v20230406/app">DNE4.8.0.4.4-v20230406</a></b><br>
+    [notice]<br>
+    Does not support encrypted TLS/SSL connection of MQTT, and can only use fixed IP broker.<br>
+    This page is using <span id="protocol"></span>.
+    <hr>
+
     Doog Inc.
 </body>
 </html>
